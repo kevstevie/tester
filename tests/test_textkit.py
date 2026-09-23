@@ -11,6 +11,19 @@ def test_slugify_ignores_surrounding_whitespace():
     assert slugify("  Hello World  ") == "hello-world"
 
 
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Hello   World", "hello-world"),
+        ("Hello, _ World", "hello-world"),
+        ("Hello, World!", "hello-world"),
+        ("...Hello World", "hello-world"),
+    ],
+)
+def test_slugify_collapses_and_strips_separators(text, expected):
+    assert slugify(text) == expected
+
+
 def test_truncate_leaves_short_text_alone():
     assert truncate("abc", 5) == "abc"
 
