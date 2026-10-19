@@ -22,3 +22,11 @@ def test_truncate_marks_where_it_cut():
 def test_truncate_rejects_non_positive_limit():
     with pytest.raises(ValueError):
         truncate("abc", 0)
+
+
+def test_slugify_collapses_runs_of_separators():
+    assert slugify("Hello, World!") == "hello-world"
+
+
+def test_slugify_strips_leading_and_trailing_dashes():
+    assert slugify("--Hello World--") == "hello-world"

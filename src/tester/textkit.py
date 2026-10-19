@@ -2,13 +2,13 @@
 
 import re
 
-_NON_ALNUM = re.compile(r"[^a-z0-9]")
+_NON_ALNUM = re.compile(r"[^a-z0-9]+")
 
 
 def slugify(text: str) -> str:
     """Convert text into a URL-friendly slug."""
     lowered = text.strip().lower()
-    return _NON_ALNUM.sub("-", lowered)
+    return _NON_ALNUM.sub("-", lowered).strip("-")
 
 
 def truncate(text: str, limit: int) -> str:
