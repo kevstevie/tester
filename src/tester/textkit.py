@@ -18,3 +18,8 @@ def truncate(text: str, limit: int) -> str:
     if len(text) <= limit:
         return text
     return text[: limit - 1].rstrip() + "…"
+
+
+def word_count(text: str) -> int:
+    """Return the number of whitespace-separated words in text."""
+    return len(text.split())
