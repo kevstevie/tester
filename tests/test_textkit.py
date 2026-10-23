@@ -91,3 +91,76 @@ def test_parse_duration_error_message_contains_original_input(bad):
 def test_parse_duration_huge_digit_string_gets_our_message():
     with pytest.raises(ValueError, match="duration"):
         parse_duration("9" * 5000 + "s")
+
+
+@pytest.mark.parametrize(
+    ("text", "seconds"),
+    [
+        ("0s", 0),
+        ("00d00h00m00s", 0),
+        ("1D2H3M4S", 93784),
+        ("1d2H3m4S", 93784),
+        ("364d24h", 365 * 86400),
+        ("364d23h59m60s", 365 * 86400),
+        (" 5m ", 300),
+        ("\n1d\n", 86400),
+    ],
+)
+def test_parse_duration_boundaries_whitespace_and_case(text, seconds):
+    assert parse_duration(text) == seconds
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "364d25h",
+        "365d0h1m",
+        "1h30",
+        "1h30m1",
+        "1h\n30m",
+        "1\x00s",
+        "1h,30m",
+        "1h30m,",
+        "٣s",  # Arabic-indic digit
+        "３s",  # full-width digit
+        "1K",  # Kelvin sign must not case-fold to a unit
+        "1ſ",  # long s must not case-fold to "s"
+        "9" * 5000 + "d",
+        "9" * 5000 + "h",
+        "9" * 5000 + "m",
+        "1d" + "9" * 5000 + "s",
+    ],
+)
+def test_parse_duration_rejects_edge_inputs_with_input_in_message(bad):
+    with pytest.raises(ValueError, match=re.escape(repr(bad))):
+        parse_duration(bad)
+
+
+def test_parse_duration_error_message_uses_unstripped_input():
+    text = "  30m1h\n"
+    with pytest.raises(ValueError) as excinfo:
+        parse_duration(text)
+    assert repr(text) in str(excinfo.value)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "bug: int() on >4300 leading zeros raises Python's own 'Exceeds the "
+        "limit (4300 digits)' ValueError, which omits the offending input "
+        "(rule 8) and rejects an input that rule 6 says is allowed"
+    ),
+)
+@pytest.mark.parametrize(
+    ("text", "seconds"),
+    [("0" * 5000 + "1s", 1), ("0" * 5000 + "s", 0), ("0" * 5000 + "1m", 60)],
+)
+def test_parse_duration_very_long_leading_zeros(text, seconds):
+    # Either parsing succeeds (leading zeros are allowed) or, if rejected,
+    # the error must still carry the offending input.
+    try:
+        result = parse_duration(text)
+    except ValueError as exc:
+        assert repr(text) in str(exc)
+    else:
+        assert result == seconds
