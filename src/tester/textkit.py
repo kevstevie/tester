@@ -51,9 +51,11 @@ def parse_duration(text: str) -> int:
     for unit, digits in match.groupdict().items():
         if digits is None:
             continue
-        if len(digits.lstrip("0")) > _MAX_SIGNIFICANT_DIGITS:
+        # Strip leading zeros first so that int() never sees an over-long string.
+        significant = digits.lstrip("0") or "0"
+        if len(significant) > _MAX_SIGNIFICANT_DIGITS:
             raise _duration_error(text, "duration component too large")
-        total += int(digits) * _UNIT_SECONDS[unit.lower()]
+        total += int(significant) * _UNIT_SECONDS[unit]
 
     if total > _MAX_SECONDS:
         raise _duration_error(text, "duration exceeds 365 days")
