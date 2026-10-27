@@ -42,3 +42,25 @@ def test_reverse_words_returns_empty_string_for_empty_input():
 
 def test_reverse_words_returns_empty_string_for_whitespace_only_input():
     assert reverse_words("   \t ") == ""
+
+
+def test_reverse_words_returns_single_word_unchanged():
+    assert reverse_words("hello") == "hello"
+
+
+def test_reverse_words_strips_whitespace_around_single_word():
+    assert reverse_words("  hello\n") == "hello"
+
+
+def test_reverse_words_result_has_no_leading_or_trailing_whitespace():
+    result = reverse_words("\n  alpha beta \t")
+    assert result == result.strip()
+    assert result == "beta alpha"
+
+
+def test_reverse_words_keeps_non_ascii_words_intact():
+    assert reverse_words("héllo wörld ✓") == "✓ wörld héllo"
+
+
+def test_reverse_words_twice_normalizes_whitespace_and_restores_order():
+    assert reverse_words(reverse_words("  one   two three ")) == "one two three"
